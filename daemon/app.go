@@ -25,12 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
-	// "github.com/cosmos/cosmos-sdk/x/auth"
-	// distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	// "github.com/cosmos/cosmos-sdk/x/params"
-	// "github.com/cosmos/cosmos-sdk/x/slashing"
-	// "github.com/cosmos/cosmos-sdk/x/staking"
-	// "github.com/cosmos/cosmos-sdk/x/supply"
+	
 	
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon"
 )
@@ -263,6 +258,9 @@ func NewDaemonApp(
 		cmn.Exit(err.Error())
 	}
 	
+	go func() {
+		//app.daemonKeeper.SetHeartbeat()
+	} ()
 	return app
 }
 
@@ -281,7 +279,7 @@ func (app *daemonApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) ab
 		panic(err)
 	}
 	
-	// fmt.Println("**** InitChainer ::genesisState=", genesisState)
+	fmt.Println("**** InitChainer ::genesisState=", genesisState)
 	
 	return app.mm.InitGenesis(ctx, genesisState)
 }

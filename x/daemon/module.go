@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -9,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/p2p"
 	
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/client/cli"
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/client/rest"
@@ -97,15 +99,21 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(am.keeper)
 }
 
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, rbb abci.RequestBeginBlock) {
+	
+	//am.keeper.SetHeartbeat(ctx, )
+	fmt.Println("**** BeginBlock ")
+}
 
 func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
+	//fmt.Println("**** EndBlock ::RequestEndBlock")
 	return []abci.ValidatorUpdate{}
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	//fmt.Println("**** InitGenesis ")
 	return InitGenesis(ctx, am.keeper, genesisState)
 }
 

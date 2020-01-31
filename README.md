@@ -7,6 +7,8 @@ go run cmd/main.go init bcc1 --chain-id bccchain --home ./chainroot1
 
 go run cmd/main.go init bcc2 --chain-id bccchain --home ./chainroot2
 
+go run cmd/main.go init bcc2 --chain-id bccchain --home ./chainroot3
+
 ```
 ``` 
 go run cmd/main.go keys add operator --home ./chainroot1 
@@ -18,13 +20,21 @@ go run cmd/main.go  collect-gentxs --home ./chainroot1
 
 go run cmd/main.go  validate-genesis --home ./chainroot1
 
+go run cmd/main.go  tendermint show-node-id --home ./chainroot1
+
 ```
 
 ``` 
 #overwrite chainroot2/config/genesis.json with first node's genesis.json
 
+set allow_duplicate_ip = false in config/config.toml in all chainroot directories
+
 change ports in chainroot2/config/config.toml
-and add [p2p] : persistent_peers = "088e9eafc0a0e1e2d5a5bcda94575b0879a4ba29@127.0.0.1:26656"
+change ports in chainroot3/config/config.toml
+
+
+
+and add [p2p] : persistent_peers = "d6809d7052471c7fc6c43c95ba97db597826ed29@127.0.0.1:26656"
 
 ```
 
@@ -33,16 +43,6 @@ go run cmd/main.go  start --home ./chainroot1
 
 go run cmd/main.go  start --home ./chainroot2
 
-```
-
-
-``` 
-go run cmd/main.go init bcc3 --chain-id bccchain --home ./chainroot3
-
-# overwrite chainroot3/config/genesis.json with first node's genesis.json
-
-# change ports in chainroot3/config/config.toml
-# and add [p2p] : persistent_peers = "088e9eafc0a0e1e2d5a5bcda94575b0879a4ba29@127.0.0.1:26656"
-
 go run cmd/main.go  start --home ./chainroot3
+
 ```

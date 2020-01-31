@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -57,6 +58,7 @@ func main() {
 	)
 	
 	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
+	
 	
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "NS", app.DefaultNodeHome)
