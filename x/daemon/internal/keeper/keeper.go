@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"time"
+	"fmt"
 	
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/internal/types"
 )
 
@@ -48,6 +50,8 @@ func (k Keeper) IsNodePresent(ctx sdk.Context, nodeid string) bool {
 func (k Keeper) SetMember(ctx sdk.Context, nodeid string, member types.Member) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set([]byte(nodeid), k.cdc.MustMarshalBinaryBare(member))
+	
+	fmt.Println("**** SetMember::", member)
 }
 
 // Deletes the entire Member metadata struct for a name
@@ -104,8 +108,9 @@ func (k Keeper) GetHeartbeat(ctx sdk.Context, nodeid string) time.Time {
 func (k Keeper) SetHeartbeat(ctx sdk.Context, nodeid string, heartbeat time.Time) {
 	member,err:=k.GetMember(ctx, nodeid)
 	if err != nil {
-		return
+		member = types.Member{NodeID:nodeid, Name: nodeid}
 	}
 	member.Heartbeat = heartbeat
+	
 	k.SetMember(ctx, nodeid, member)
 }

@@ -16,4 +16,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgAddMember{}, "daemon/AddMember", nil)
 	cdc.RegisterConcrete(MsgRemoveMember{}, "daemon/RemoveMember", nil)
 	cdc.RegisterConcrete(MsgHeartbeat{}, "daemon/Heartbeat", nil)
+	
 }

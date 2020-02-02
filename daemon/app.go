@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 	
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
@@ -26,8 +28,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	
-	
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon"
+	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/client/inner"
 )
 
 const appName = "daemon"
@@ -71,7 +73,7 @@ func MakeCodec() *codec.Codec {
 	return cdc
 }
 
-type daemonApp struct {
+type App struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 	
@@ -87,16 +89,21 @@ type daemonApp struct {
 	distrKeeper    distr.Keeper
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
-	daemonKeeper       daemon.Keeper
+	daemonKeeper   daemon.Keeper
 	
 	// Module Manager
 	mm *module.Manager
 }
 
-// NewDaemonApp is a constructor function for daemonApp
+var (
+	_ abci.Application = App{}
+)
+
+
+// NewDaemonApp is a constructor function for App
 func NewDaemonApp(
 	logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp),
-) *daemonApp {
+) *App {
 	
 	// First define the top level codec that will be shared by the different modules
 	cdc := MakeCodec()
@@ -111,12 +118,11 @@ func NewDaemonApp(
 	
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 	
-	
 	// keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey,params.StoreKey,
 	// 	supply.StoreKey,  distr.StoreKey, staking.StoreKey, daemon.StoreKey)
 	// tkeys := sdk.NewTransientStoreKeys(daemon.TStoreKey,staking.TStoreKey,  params.TStoreKey)
 	// Here you initialize your application with the store keys it requires
-	var app = &daemonApp{
+	var app = &App{
 		BaseApp: bApp,
 		cdc:     cdc,
 		keys:    keys,
@@ -258,9 +264,11 @@ func NewDaemonApp(
 		cmn.Exit(err.Error())
 	}
 	
-	go func() {
-		//app.daemonKeeper.SetHeartbeat()
-	} ()
+	// go func() {
+	// 	for true {
+	// 		app.daemonKeeper.SetHeartbeat(app.)
+	// 	}
+	// } ()
 	return app
 }
 
@@ -271,7 +279,21 @@ func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
 
-func (app *daemonApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *App) Init(ctx *server.Context){
+	fmt.Println("Init Daemon App")
+}
+
+func (app *App) Start() {
+	go func() {
+		for true {
+			time.Sleep(5 * time.Second)
+			inner.BroadcastHeartbeat()
+		}
+	}()
+	
+}
+
+func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 	
 	err := app.cdc.UnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -279,23 +301,23 @@ func (app *daemonApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) ab
 		panic(err)
 	}
 	
-	fmt.Println("**** InitChainer ::genesisState=", genesisState)
+	// fmt.Println("**** InitChainer ::genesisState=", genesisState)
 	
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
-func (app *daemonApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *App) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
-func (app *daemonApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
-func (app *daemonApp) LoadHeight(height int64) error {
+func (app *App) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the app's module account addresses.
-func (app *daemonApp) ModuleAccountAddrs() map[string]bool {
+func (app *App) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -304,9 +326,9 @@ func (app *daemonApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-//_________________________________________________________
+// _________________________________________________________
 
-func (app *daemonApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
+func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteList []string,
 ) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 	
 	// as if they could withdraw from the start of the next block
@@ -315,7 +337,6 @@ func (app *daemonApp) ExportAppStateAndValidators(forZeroHeight bool, jailWhiteL
 	genState := app.mm.ExportGenesis(ctx)
 	
 	fmt.Println("**** ExportAppStateAndValidators :: genState::", genState)
-	
 	
 	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
 	if err != nil {

@@ -3,14 +3,14 @@ package daemon
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/codec"
+	
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/p2p"
 	
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/client/cli"
 	"github.com/rhizomata-io/dist-daemon-cosmos/x/daemon/client/rest"
@@ -100,13 +100,39 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 func (am AppModule) BeginBlock(ctx sdk.Context, rbb abci.RequestBeginBlock) {
-	
-	//am.keeper.SetHeartbeat(ctx, )
+	// am.keeper.SetHeartbeat(ctx, node.GetNodeID(), time.Now())
 	fmt.Println("**** BeginBlock ")
+	
+	iterator := am.keeper.GetMembersIterator(ctx)
+	
+	defer iterator.Close()
+	
+	for iterator.Valid() {
+		fmt.Println(" ----- Node ", string(iterator.Key()), ", value=", string(iterator.Key()))
+		iterator.Next()
+	}
+	
+	// member, err := am.keeper.GetMember(ctx, node.GetNodeID())
+	//
+	// if err != nil {
+	// 	fmt.Println("[ERROR] ", err)
+	// } else {
+	// 	fmt.Println("Member : ", member)
+	// }
+	
 }
 
-func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
-	//fmt.Println("**** EndBlock ::RequestEndBlock")
+func (am AppModule) EndBlock(ctx sdk.Context, reb abci.RequestEndBlock) []abci.ValidatorUpdate {
+	fmt.Println("**** EndBlock ")
+	// iterator := am.keeper.GetMembersIterator(ctx)
+	//
+	// defer iterator.Close()
+	//
+	// for iterator.Valid() {
+	// 	fmt.Println(" ----- Node ", string(iterator.Key()), ", value=", string(iterator.Key()))
+	// 	iterator.Next()
+	// }
+	
 	return []abci.ValidatorUpdate{}
 }
 

@@ -8,6 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+
+
 // Member member info
 type Member struct {
 	NodeID     string `json:"nodeid"`

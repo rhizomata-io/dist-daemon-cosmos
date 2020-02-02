@@ -9,6 +9,11 @@ import (
 // RouterKey is the module name router key
 const RouterKey = ModuleName // this was defined in your key.go file
 
+type DaemonMsg interface {
+	sdk.Msg
+	SetOwner(owner sdk.AccAddress)
+}
+
 // MsgAddMember add member message
 type MsgAddMember struct {
 	Name string
@@ -42,6 +47,10 @@ func (msg MsgAddMember) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgAddMember) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Owner}
+}
+
+func (msg MsgAddMember) SetOwner(owner sdk.AccAddress) {
+	msg.Owner = owner
 }
 
 
@@ -79,6 +88,10 @@ func (msg MsgRemoveMember) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Owner}
 }
 
+func (msg MsgRemoveMember) SetOwner(owner sdk.AccAddress) {
+	msg.Owner = owner
+}
+
 // MsgHeartbeat heartbeat message
 type MsgHeartbeat struct {
 	NodeID      string
@@ -86,8 +99,8 @@ type MsgHeartbeat struct {
 	Owner sdk.AccAddress
 }
 
-func NewMsgHeartbeat(nodeid string, time time.Time) MsgHeartbeat {
-	return MsgHeartbeat{NodeID: nodeid, Time: time}
+func NewMsgHeartbeat(nodeid string, time time.Time, owner sdk.AccAddress) MsgHeartbeat {
+	return MsgHeartbeat{NodeID: nodeid, Time: time, Owner:owner}
 }
 
 // Route should return the name of the module
@@ -112,4 +125,8 @@ func (msg MsgHeartbeat) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgHeartbeat) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Owner}
+}
+
+func (msg MsgHeartbeat) SetOwner(owner sdk.AccAddress) {
+	msg.Owner = owner
 }
